@@ -25,7 +25,7 @@ function checkBackendHealth() {
 // Function to restart backend
 function restartBackend() {
     console.log('Restarting backend...')
-    exec('cd .. && cd STAN-Relaunch-backend && pm2 start app.js', (error, stdout, stderr) => {
+    exec('cd .. && cd STAN-Relaunch-backend && pm2 stop backend && pm2 start app.js --name backend', (error, stdout, stderr) => {
         if (error) {
             console.error(`Error restarting backend: ${error}`);
             return;
