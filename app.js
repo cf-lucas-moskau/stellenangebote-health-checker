@@ -13,7 +13,7 @@ function checkBackendHealth() {
             console.log('Backend is up:', response.status);
         })
         .catch(error => {
-            if (error.response && error.response.status >= 500) {
+            if (error.response && error.response.status >= 400) {
                 console.log('Backend error detected, restarting...');
                 restartBackend();
             } else {
@@ -25,10 +25,16 @@ function checkBackendHealth() {
 // Function to restart backend
 function restartBackend() {
     console.log('Restarting backend...')
-    exec('cd .. && cd stellenangebote-health-checker && pm2 stop TEST && pm2 start app.js --name TEST', (error, stdout, stderr) => {
+    exec('cd .. && cd STAN-Relaunch-Backend && pm2 stop backend && pm2 start app.js --name backend', (error, stdout, stderr) => {
         if (error) {
-            console.error(`Error restarting backend: ${error}`);
-            return;
+            // this probably means the app has shut down completely
+            console.log("Backend probably shut down completely, restarting without ending it first...");
+            exec('cd .. && cd STAN-Relaunch-Backend && pm2 start app.js --name backend', (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error restarting backend: ${error}`);
+                    return;
+                }
+            });
         }
         console.log(`Backend restarted: ${stdout}`);
     });
@@ -38,7 +44,6 @@ function restartBackend() {
 cron.schedule('* * * * *', () => {
     console.log('Running scheduled health check...');
     checkBackendHealth();
-    restartBackend();
 });
 
 app.listen(3000, () => {
